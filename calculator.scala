@@ -1,24 +1,35 @@
-/** Software implementation of PROC (PROstoy Calculator) mk. 1 (or mk. 2).
-  *
-  * You should finish this procedure according to
-  * the reference described in `README.md` to complete
-  * the assignment.
-  */
+import scala.util.boundary
+import scala.util.boundary.break
+
 @main def calculator(commands: String*): Unit = {
-  /** Converts given string `s` to integer.
-    *
-    * Throws [[NumberFormatException]] if `s` can't be converted to integer,
-    * but you shouldn't worry about it at this moment.
-    */
-  def parseInt(s: String): Int = s.toInt
+  var calc = Calc(0, 0, 0, false)
 
-  /** Representation of `acc` register. */
-  var acc: Int = 0
-  // define additional registers here
+  boundary:
+    for cmd <- commands do {
+      calc = cmd.trim match
+        case "+"     => calc.add
+        case "-"     => calc.sub
+        case "*"     => calc.mul
+        case "/"     => calc.div
+        case "swap"  => calc.swap
+        case "blink" => calc.blink
+        case "acc"   => calc.acc
+        case "break" => break()
+        case s       => calc.load(s.toInt)
+    }
 
-  for (c <- commands) {
-    // implement your calculator's logic here
-  }
+  println(calc.accumulator)
+}
 
-  println(acc)
+case class Calc(accumulator: Int, a: Int, b: Int, flag: Boolean) {
+  def add: Calc   = copy(accumulator = a + b, flag = false)
+  def sub: Calc   = copy(accumulator = a - b, flag = false)
+  def mul: Calc   = copy(accumulator = a * b, flag = false)
+  def div: Calc   = if b != 0 then copy(accumulator = a / b, flag = false) else Calc(0, 0, 0, false)
+  def swap: Calc  = copy(a = b, b = a)
+  def blink: Calc = copy(flag = !flag)
+  def acc: Calc   = load(accumulator)
+  def load(x: Int): Calc =
+    val loaded = if !flag then copy(a = x) else copy(b = x)
+    loaded.blink
 }
